@@ -70,8 +70,8 @@
       const loadingId = appendMessage('Pensando...', 'bot-message');
 
       try {
-        // Endpoint actualizado y oficial de Gemini
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}
+        // URL corregida con comilla de cierre
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         
         const response = await fetch(url, {
           method: 'POST',
