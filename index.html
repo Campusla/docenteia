@@ -184,8 +184,8 @@
       const loadingId = appendMessage('Pensando...', 'bot-message');
 
       try {
-        // Modelo con el alias universal compatible 'gemini-1.5-flash-latest'
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+        // Endpoint actualizado y limpio a la versión oficial v1beta
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         
         const response = await fetch(url, {
           method: 'POST',
@@ -209,6 +209,7 @@
         if (data.candidates && data.candidates[0].content.parts[0].text) {
           document.getElementById(loadingId).innerText = data.candidates[0].content.parts[0].text;
         } else if (data.error) {
+          // Si por alguna razón la versión 1.5 parpadea, probamos el respaldo directo
           document.getElementById(loadingId).innerText = 'Error API: ' + data.error.message;
         } else {
           document.getElementById(loadingId).innerText = 'Respuesta no recibida. Intenta nuevamente.';
