@@ -128,7 +128,7 @@
 </div>
 
 <script>
-    const HF_API_KEY = "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";
+    const HF_API_KEY = "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";
 
     function checkEnter(event) {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -150,7 +150,6 @@
 
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
-        // Proxy CORS para saltar los bloqueos de navegador en GitHub Pages
         const proxyUrl = "https://corsproxy.io/?";
         const apiUrl = "https://router.huggingface.co/hf-inference/v1/chat/completions";
 
