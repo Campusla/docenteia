@@ -128,8 +128,7 @@
 </div>
 
 <script>
-    // Reemplaza esta variable únicamente con tu clave de Google AI Studio que empieza por AIzaSy...
-    const GEMINI_API_KEY = "AIzaSy_PEGA_AQUI_TU_KEY_REAL";
+    const HF_API_KEY = "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";
 
     function checkEnter(event) {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -152,32 +151,34 @@
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const response = await fetch("https://api-inference.huggingface.co/models/google/gemma-2-2b-it", {
                 method: "POST",
                 headers: {
+                    "Authorization": `Bearer ${HF_API_KEY}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: "Eres un tutor pedagógico de inglés cordial y experto de CampusLA (método Inglish Pupies). Responde de forma muy didáctica y concisa: " + text
-                        }]
-                    }]
+                    inputs: `Eres un tutor pedagógico de inglés cordial y experto de CampusLA (método Inglish Pupies). Responde en español de forma muy didáctica a esta consulta: ${text}`
                 })
             });
 
             const data = await response.json();
 
-            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-                loadingDiv.innerText = data.candidates[0].content.parts[0].text;
+            if (Array.isArray(data) && data[0] && data[0].generated_text) {
+                let cleanText = data[0].generated_text;
+                // Remover el prompt inicial si el modelo lo repite
+                if(cleanText.includes("consulta:")) {
+                    cleanText = cleanText.split("consulta:")[1].replace(text, "").trim();
+                }
+                loadingDiv.innerText = cleanText || "¡Hola! ¿En qué te puedo ayudar con el inglés hoy?";
             } else if (data.error) {
-                loadingDiv.innerText = "Error de API: " + data.error.message;
+                loadingDiv.innerText = "El servidor está inicializando el modelo. Intenta enviar el mensaje de nuevo en 5 segundos.";
             } else {
-                loadingDiv.innerText = "No se obtuvo respuesta del tutor.";
+                loadingDiv.innerText = "Respuesta no recibida. Inténtalo de nuevo.";
             }
 
         } catch (error) {
-            loadingDiv.innerText = "Ocurrió un error al conectar con la API.";
+            loadingDiv.innerText = "Ocurrió un error de red al conectar con el servicio.";
         }
     }
 
