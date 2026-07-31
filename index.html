@@ -128,7 +128,7 @@
 </div>
 
 <script>
-    const HF_API_KEY = "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";
+    const HF_API_KEY = "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";
 
     function checkEnter(event) {
         if (event.key === "Enter" && !event.shiftKey) {
@@ -166,13 +166,12 @@
 
             if (Array.isArray(data) && data[0] && data[0].generated_text) {
                 let cleanText = data[0].generated_text;
-                // Remover el prompt inicial si el modelo lo repite
                 if(cleanText.includes("consulta:")) {
                     cleanText = cleanText.split("consulta:")[1].replace(text, "").trim();
                 }
                 loadingDiv.innerText = cleanText || "¡Hola! ¿En qué te puedo ayudar con el inglés hoy?";
             } else if (data.error) {
-                loadingDiv.innerText = "El servidor está inicializando el modelo. Intenta enviar el mensaje de nuevo en 5 segundos.";
+                loadingDiv.innerText = "Respuesta del servidor: " + data.error;
             } else {
                 loadingDiv.innerText = "Respuesta no recibida. Inténtalo de nuevo.";
             }
