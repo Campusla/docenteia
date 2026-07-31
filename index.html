@@ -148,24 +148,56 @@
 
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
+        const systemPrompt = "Eres un tutor pedagógico de inglés cordial y experto de CampusLA (método Inglish Pupies). Responde en español de forma muy didáctica a la siguiente consulta: ";
+        const fullPrompt = systemPrompt + text;
+
         try {
-            // Contexto del rol concatenado directamente en el prompt
-            const prompt = `Eres un tutor pedagógico de inglés cordial y experto de CampusLA (método Inglish Pupies). Responde en español de forma muy didáctica a esta pregunta: ${text}`;
+            // Petición a la API gratuita de DDG
+            const statusResp = await fetch("https://corsproxy.io/?" + encodeURIComponent("https://duckduckgo.com/duckchat/v1/status"), {
+                headers: { "x-vqd-accept": "1" }
+            });
+            const vqd = statusResp.headers.get("x-vqd-4");
+
+            const chatResp = await fetch("https://corsproxy.io/?" + encodeURIComponent("https://duckduckgo.com/duckchat/v1/chat"), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-vqd-4": vqd
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: fullPrompt }]
+                })
+            });
+
+            const streamData = await chatResp.text();
             
-            // Petición GET limpia sin autenticación ni cobros
-            const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+            // Extraer el texto de la respuesta en streaming
+            const lines = streamData.split("\n");
+            let fullText = "";
 
-            const response = await fetch(url);
-            const reply = await response.text();
+            for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                    const jsonStr = line.replace("data: ", "").trim();
+                    if (jsonStr !== "[DONE]") {
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            if (parsed.message) {
+                                fullText += parsed.message;
+                            }
+                        } catch(e){}
+                    }
+                }
+            }
 
-            if (reply && reply.trim().length > 0) {
-                loadingDiv.innerText = reply.trim();
+            if (fullText.trim().length > 0) {
+                loadingDiv.innerText = fullText.trim();
             } else {
-                loadingDiv.innerText = "No se recibió respuesta del tutor. Inténtalo de nuevo.";
+                loadingDiv.innerText = "No se obtuvo respuesta del tutor. Inténtalo de nuevo.";
             }
 
         } catch (error) {
-            loadingDiv.innerText = "Error de red al conectar con el servicio.";
+            loadingDiv.innerText = "Error al conectar con la IA. Por favor reintenta.";
         }
     }
 
