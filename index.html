@@ -128,7 +128,6 @@
 </div>
 
 <script>
-    // API Key de Gemini configurada
     const GEMINI_API_KEY = "AIzaSyCd3AWzlfA1fgA1gK-LaXHJY3anXOecjrE";
 
     function checkEnter(event) {
@@ -152,7 +151,10 @@
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            // Endpoint estándar optimizado para Gemini Flash
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const response = await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -160,19 +162,22 @@
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: "Eres un tutor pedagógico de inglés cordial y experto de CampusLA (basado en el método Inglish Pupies). Responde de forma muy didáctica y clara: " + text
+                            text: "Eres un tutor pedagógico de inglés cordial y experto de CampusLA (basado en el método Inglish Pupies). Responde de forma didáctica y breve a la siguiente consulta del estudiante: " + text
                         }]
                     }]
                 })
             });
 
             const data = await response.json();
-            const botReply = data.candidates[0].content.parts[0].text;
-
-            loadingDiv.innerText = botReply;
+            
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                loadingDiv.innerText = data.candidates[0].content.parts[0].text;
+            } else {
+                loadingDiv.innerText = "Error en la respuesta de Gemini. Verifica la consulta.";
+            }
 
         } catch (error) {
-            loadingDiv.innerText = "Ocurrió un error al conectar con el asistente de IA. Inténtalo de nuevo.";
+            loadingDiv.innerText = "Ocurrió un error de conexión. Inténtalo de nuevo.";
         }
     }
 
