@@ -1,115 +1,165 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Docente IA CampusLA</title>
-  <style>
-    #ia-teacher-widget { position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: Arial, sans-serif; }
-    #chat-trigger { background-color: #0056b3; color: #ffffff; border: none; padding: 14px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    #chat-window { width: 350px; height: 480px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: absolute; bottom: 60px; right: 0; }
-    .chat-hidden { display: none !important; }
-    .chat-header { background-color: #0056b3; color: #ffffff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
-    .status-dot { height: 9px; width: 9px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 6px; }
-    #close-chat { background: none; border: none; color: white; font-size: 16px; cursor: pointer; }
-    .chat-body { flex: 1; padding: 12px; overflow-y: auto; background-color: #f8f9fa; display: flex; flex-direction: column; gap: 10px; }
-    .message { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
-    .bot-message { background-color: #e9ecef; color: #212529; align-self: flex-start; border-bottom-left-radius: 2px; }
-    .user-message { background-color: #0056b3; color: #ffffff; align-self: flex-end; border-bottom-right-radius: 2px; }
-    .chat-footer { display: flex; padding: 10px; border-top: 1px solid #dee2e6; background-color: #ffffff; }
-    .chat-footer input { flex: 1; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 20px; outline: none; }
-    .chat-footer button { background-color: #0056b3; color: white; border: none; padding: 8px 14px; margin-left: 8px; border-radius: 20px; cursor: pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLA - Companion IA</title>
+    <!-- FontAwesome & Bootstrap -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" />
+    
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .chat-card {
+            width: 100%;
+            max-width: 650px;
+            height: 85vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #0d47a1;
+            color: #ffffff;
+            padding: 16px 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background-color: #0d47a1;
+            color: #ffffff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg-bot {
+            align-self: flex-start;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-footer {
+            padding: 15px;
+            background: #ffffff;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-group textarea {
+            resize: none;
+            height: 45px;
+            border-radius: 25px 0 0 25px !important;
+            padding-top: 10px;
+        }
+
+        .btn-custom {
+            background-color: #0d47a1;
+            color: #ffffff;
+            border-radius: 0 25px 25px 0 !important;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .btn-custom:hover {
+            background-color: #1565c0;
+            color: #ffffff;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="ia-teacher-widget">
-    <div id="chat-window" class="chat-hidden">
-      <div class="chat-header">
-        <div class="teacher-info">
-          <span class="status-dot"></span>
-          <strong>Docente IA - Inglés B1</strong>
-        </div>
-        <button id="close-chat" onclick="toggleChat()">✕</button>
-      </div>
-      <div id="chat-body" class="chat-body">
-        <div class="message bot-message">
-          ¡Hola! 👋 Soy tu Docente IA de Inglés de CampusLA. Estoy entrenado con el método Super Intensivo B1. ¿En qué tema o módulo quieres trabajar hoy?
-        </div>
-      </div>
-      <div class="chat-footer">
-        <input type="text" id="user-input" placeholder="Escribe tu duda o respuesta..." onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">Enviar</button>
-      </div>
+<div class="chat-card">
+    <div class="chat-header">
+        <span>CampusLA - Tutor Inglish Pupies</span>
+        <i class="fa-solid fa-robot"></i>
     </div>
-    <button id="chat-trigger" onclick="toggleChat()">
-      💬 Docente IA
-    </button>
-  </div>
 
-  <script>
-    const GEMINI_API_KEY = 'AIzaSyB0_e1VvpmNok4JhMq2boG_pTnDrFMRj3U';
-    const SYSTEM_INSTRUCTION = "Eres el Docente IA oficial de Inglés de CampusLA. Tu método se basa strictly en el libro 'Programa Inglés B1 Super Intensivo' de Escuela Andina. REGLAS: Enseñas de forma secuencial (módulos 1 al 46). Corriges la gramática en inglés amablemente y mantienes un tono claro, motivador y directo.";
+    <div class="chat-body" id="chatBody">
+        <div class="message msg-bot">
+            ¡Hola, parcero! Soy tu tutor interactivo de CampusLA. ¿Qué lección o tema vamos a repasar hoy?
+        </div>
+    </div>
 
-    function toggleChat() {
-      document.getElementById('chat-window').classList.toggle('chat-hidden');
-    }
+    <div class="chat-footer">
+        <form id="chatForm" onsubmit="handleSend(event)" class="d-flex align-items-center">
+            <div class="input-group">
+                <textarea id="userInput" class="form-control" placeholder="Escribe tu mensaje aquí..." onkeydown="checkEnter(event)"></textarea>
+                <button type="submit" class="btn btn-custom">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-    function handleKeyPress(e) {
-      if (e.key === 'Enter') sendMessage();
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById('user-input');
-      const messageText = input.value.trim();
-      if (!messageText) return;
-
-      appendMessage(messageText, 'user-message');
-      input.value = '';
-
-      const loadingId = appendMessage('Pensando...', 'bot-message');
-
-      try {
-        // URL corregida con comilla de cierre
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              role: 'user',
-              parts: [{ text: SYSTEM_INSTRUCTION + "\n\nPregunta del estudiante: " + messageText }]
-            }]
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.candidates && data.candidates[0] && data.candidates[0].content.parts[0].text) {
-          document.getElementById(loadingId).innerText = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          document.getElementById(loadingId).innerText = 'Error API: ' + data.error.message;
-        } else {
-          document.getElementById(loadingId).innerText = 'Respuesta no recibida. Intenta nuevamente.';
+<script>
+    function checkEnter(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            handleSend(event);
         }
-
-      } catch (error) {
-        document.getElementById(loadingId).innerText = 'Error de conexión con la API.';
-      }
     }
 
-    function appendMessage(text, className) {
-      const chatBody = document.getElementById('chat-body');
-      const msgDiv = document.createElement('div');
-      const id = 'msg-' + Date.now();
-      msgDiv.id = id;
-      msgDiv.className = `message ${className}`;
-      msgDiv.innerText = text;
-      chatBody.appendChild(msgDiv);
-      chatBody.scrollTop = chatBody.scrollHeight;
-      return id;
+    function handleSend(event) {
+        if(event) event.preventDefault();
+        
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        
+        if (!text) return;
+
+        addMessage(text, 'msg-user');
+        input.value = '';
+
+        setTimeout(() => {
+            addMessage("¡Excelente! Procesando la respuesta con la metodología de CampusLA...", 'msg-bot');
+        }, 600);
     }
-  </script>
+
+    function addMessage(text, className) {
+        const body = document.getElementById('chatBody');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${className}`;
+        msgDiv.innerText = text;
+        body.appendChild(msgDiv);
+        body.scrollTop = body.scrollHeight;
+    }
+</script>
+
 </body>
 </html>
