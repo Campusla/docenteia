@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLA - Companion IA</title>
+    <title>CampusLA - Tutor Inglish Pupies</title>
     <!-- Estilos Externos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" />
@@ -128,6 +128,9 @@
 </div>
 
 <script>
+    // Conexión directa a tu PHP en cPanel
+    const PHP_ENDPOINT = 'https://www.campuslatinoamerica.edu.co/chat.php';
+
     function checkEnter(event) {
         if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
@@ -149,21 +152,27 @@
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
         try {
-            const systemPrompt = "Eres un tutor pedagogico de ingles experto de CampusLA. Responde en espanol explicativamente: ";
-            const fullQuery = encodeURIComponent(systemPrompt + text);
+            const response = await fetch(PHP_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message: text })
+            });
 
-            // Llamada directa vía GET sin restricciones de servidor
-            const response = await fetch("https://text.pollinations.ai/" + fullQuery);
+            const data = await response.json();
 
-            if (response.ok) {
-                const data = await response.text();
-                loadingDiv.innerText = data.trim();
+            // Procesar respuesta estructurada de Gemini en PHP
+            if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                loadingDiv.innerText = data.candidates[0].content.parts[0].text.trim();
+            } else if (data.error) {
+                loadingDiv.innerText = "Error del servidor: " + (data.error.message || JSON.stringify(data.error));
             } else {
-                loadingDiv.innerText = "Error de respuesta del servidor.";
+                loadingDiv.innerText = "Error o respuesta no válida del servidor.";
             }
 
         } catch (error) {
-            loadingDiv.innerText = "Error de conexion con el servidor.";
+            loadingDiv.innerText = "Error de conexión con el servidor de CampusLA.";
         }
     }
 
