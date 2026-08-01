@@ -149,31 +149,21 @@
         const loadingDiv = addMessage("Pensando...", 'msg-bot');
 
         try {
-            const promptSystem = "Eres un tutor pedagógico de inglés cordial y experto de CampusLA (método Inglish Pupies). Responde en español de forma muy clara y didáctica: ";
-            
-            const response = await fetch("https://text.pollinations.ai/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    messages: [
-                        { role: "system", content: promptSystem },
-                        { role: "user", content: text }
-                    ],
-                    model: "openai"
-                })
-            });
+            const systemPrompt = "Eres un tutor pedagogico de ingles experto de CampusLA. Responde en espanol explicativamente: ";
+            const fullQuery = encodeURIComponent(systemPrompt + text);
+
+            // Llamada directa vía GET sin restricciones de servidor
+            const response = await fetch("https://text.pollinations.ai/" + fullQuery);
 
             if (response.ok) {
                 const data = await response.text();
                 loadingDiv.innerText = data.trim();
             } else {
-                loadingDiv.innerText = "Error momentáneo en el servidor. Intenta enviar el mensaje de nuevo.";
+                loadingDiv.innerText = "Error de respuesta del servidor.";
             }
 
         } catch (error) {
-            loadingDiv.innerText = "Error de conexión. Revisa tu señal de internet.";
+            loadingDiv.innerText = "Error de conexion con el servidor.";
         }
     }
 
